@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Routes Viewer</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <!-- jsFiddle will insert css and js -->
+  </head>
+  <style>
+      /* Optional: Makes the sample page fill the window. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#container {
+  height: 100%;
+  display: flex;
+}
+
+#sidebar {
+  flex-basis: 15rem;
+  flex-grow: 1;
+  padding: 1rem;
+  max-width: 30rem;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+#map {
+  flex-basis: 0;
+  flex-grow: 4;
+  height: 100%;
+}
+
+#directions-panel {
+  margin-top: 10px;
+}
+  </style>
+  <body>
+  <div>
+  <br>
+  </div>
+  <div>
+       <input type="submit" id="submit" />
+  </div>
+    <div id="container">
+      <div id="map"></div>
+    </div>
+
+    <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDy-gIsS04vfoY07FGcW6qE4JSbniRz05k&callback=initMap&v=weekly&channel=2"
+      async
+    ></script>
+    <script>
+  function initMap() {
+  //routes=[["12.8994244,77.620856","12.9226044,77.5516449"],["12.8884984,77.5911424","12.8802588,77.587021"]]
+  routes=[['12.93028,77.63092', '12.8651613,77.7696325', '12.879458,77.760093', '12.8426543,77.7250889'], ['12.9704057,77.6749602', '12.9966707,77.6594519', '13.035273,77.5924817', '13.1175296,77.5773013'], ['13.0104305,77.5577364', '13.0376633,77.5458015'], ['12.8944716,77.6634173', '12.8944716,77.6634173', '12.9881289,77.6845032', '12.9797967,77.6922843', '12.9674553,77.7101854', '12.9641411,77.7168758', '12.9576858,77.7412671', '12.957619,77.7412928'], ['12.8994244,77.620856', '12.8994244,77.620856', '12.8802588,77.587021', '12.8884984,77.5911424', '12.9048863,77.6003559', '12.915212,77.589124', '12.9169573,77.5778016', '12.9026002,77.5647134', '12.9226044,77.5516449', '12.93887,77.54484'], ['12.9193455,77.6292008', '12.9193455,77.6292008', '12.9121658,77.6506866', '12.9261293,77.6655585', '12.9256328,77.677937', '12.9196245,77.6888967', '12.922063,77.6917799', '12.9285216,77.6953331', '12.9295556,77.6874416', '12.9060576,77.7034716']]
+  colours=['red','green','blue','orange','crimson','steelblue','fuchsia','yellow','gray']
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 16,
+    center: { lat: 12.924, lng: 77.618 },
+  });
+  renderers=[]
+  directionsService=new google.maps.DirectionsService()
+  document.getElementById("submit").addEventListener("click", () => {
+      for (var i = 0; i < routes.length; i++) {
+      		renderers[i]=new google.maps.DirectionsRenderer();
+          renderers[i].setMap(map);
+          renderers[i].setOptions({
+              polylineOptions: {
+                strokeColor: colours[i],
+                strokeOpacity:0.5,
+                strokeWeight:5
+              }
+              });
+          waypts=[]
+          for (var j = 0 ;j< routes[i].length;j++){
+              waypts.push({location:routes[i][j],
+              							stopover:true
+              						})
+          }
+          calculateAndDisplayRoute(directionsService,renderers[i],waypts)
+
+      }
+      });
+}
+
+function calculateAndDisplayRoute(directionsService, directionsRenderer,waypts) {
+  directionsService
+    .route({
+      origin: "12.924739238040953,77.61868735920821",
+      destination: "12.930506483232104,77.63095359699321",
+      waypoints: waypts,
+      optimizeWaypoints: true,
+      travelMode: google.maps.TravelMode.DRIVING,
+    })
+    .then((response) => {
+      directionsRenderer.setDirections(response);
+
+      const route = response.routes[0];
+    })
+    .catch((e) => window.alert("Directions request failed due to " + status));
+}
+    </script>
+  </body>
+</html>

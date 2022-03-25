@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Routes Viewer</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <!-- jsFiddle will insert css and js -->
+  </head>
+  <style>
+      /* Optional: Makes the sample page fill the window. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#container {
+  height: 100%;
+  display: flex;
+}
+
+#sidebar {
+  flex-basis: 15rem;
+  flex-grow: 1;
+  padding: 1rem;
+  max-width: 30rem;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+#map {
+  flex-basis: 0;
+  flex-grow: 4;
+  height: 100%;
+}
+
+#directions-panel {
+  margin-top: 10px;
+}
+  </style>
+  <body>
+  <div>
+  <br>
+  </div>
+  <div>
+       <input type="submit" id="submit" />
+  </div>
+    <div id="container">
+      <div id="map"></div>
+    </div>
+
+    <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDy-gIsS04vfoY07FGcW6qE4JSbniRz05k&callback=initMap&v=weekly&channel=2"
+      async
+    ></script>
+    <script>
+  function initMap() {
+  //routes=[["12.8994244,77.620856","12.9226044,77.5516449"],["12.8884984,77.5911424","12.8802588,77.587021"]]
+  routes={{ routes }}
+  colours=['red','green','blue','orange','crimson','steelblue','fuchsia','yellow','gray']
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 16,
+    center: { lat: 12.924, lng: 77.618 },
+  });
+  renderers=[]
+  directionsService=new google.maps.DirectionsService()
+  document.getElementById("submit").addEventListener("click", () => {
+      for (var i = 0; i < routes.length; i++) {
+      		renderers[i]=new google.maps.DirectionsRenderer();
+          renderers[i].setMap(map);
+          renderers[i].setOptions({
+              polylineOptions: {
+                strokeColor: colours[i],
+                strokeOpacity:0.5,
+                strokeWeight:5
+              }
+              });
+          waypts=[]
+          for (var j = 0 ;j< routes[i].length;j++){
+              waypts.push({location:routes[i][j],
+              							stopover:true
+              						})
+          }
+          calculateAndDisplayRoute(directionsService,renderers[i],waypts)
+
+      }
+      });
+}
+
+function calculateAndDisplayRoute(directionsService, directionsRenderer,waypts) {
+  directionsService
+    .route({
+      origin: "12.924739238040953,77.61868735920821",
+      destination: "12.930506483232104,77.63095359699321",
+      waypoints: waypts,
+      optimizeWaypoints: true,
+      travelMode: google.maps.TravelMode.DRIVING,
+    })
+    .then((response) => {
+      directionsRenderer.setDirections(response);
+
+      const route = response.routes[0];
+    })
+    .catch((e) => window.alert("Directions request failed due to " + status));
+}
+    </script>
+  </body>
+</html>
