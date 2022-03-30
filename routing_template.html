@@ -55,7 +55,8 @@ body {
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDy-gIsS04vfoY07FGcW6qE4JSbniRz05k&callback=initMap&v=weekly&channel=2"
       async
     ></script>
-    <script>
+  <script>
+  /*
   function initMap() {
   //routes=[["12.8994244,77.620856","12.9226044,77.5516449"],["12.8884984,77.5911424","12.8802588,77.587021"]]
   routes={{ routes }}
@@ -105,6 +106,136 @@ function calculateAndDisplayRoute(directionsService, directionsRenderer,waypts) 
     })
     .catch((e) => window.alert("Directions request failed due to " + status));
 }
+*/
     </script>
+  <script>
+    function initMap() {
+  routes = [
+    ["12.8994244,77.620856", "12.9226044,77.5516449"],
+    ["12.8884984,77.5911424", "12.8802588,77.587021"]
+  ]
+  route_info={{ route_info }}
+  //route_info=[[{"client":"Naren","location":"12.8994244,77.620856"},{"client":"Mahendranath","location":"12.9226044,77.5516449"}],[{"client":"Gourab","location":"12.8884984,77.5911424"},{"client":"Neeta","location":"12.8802588,77.587021"}]]
+  for (r =0;r<route_info.length;r++){
+  		console.log("This is route : ",r ,"Stop are: ",route_info[r].length )
+      rr=route_info[r]
+      for (s=0;s< rr.length;s++){
+          console.log(`Stop # ${s} , Name is  ${rr[s].client}`)
+      }
+  }
+
+  colours = ['red', 'green', 'blue', 'orange', 'crimson', 'steelblue', 'fuchsia', 'yellow', 'gray']
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 16,
+    center: {
+      lat: 12.924,
+      lng: 77.618
+    },
+  });
+  renderers = []
+  directionsService = new google.maps.DirectionsService()
+  document.getElementById("submit").addEventListener("click", () => {
+    for (var i = 0; i < route_info.length; i++) {
+      renderers[i] = new google.maps.DirectionsRenderer({
+        suppressMarkers: true
+      });
+      renderers[i].setMap(map);
+      renderers[i].setOptions({
+        polylineOptions: {
+          strokeColor: colours[i],
+          strokeOpacity: 0.5,
+          strokeWeight: 5
+        }
+      });
+      waypts = []
+      stops=route_info[i]
+      for (var j = 0; j < stops.length; j++) {
+        waypts.push({
+          location: stops[j].location,
+          stopover: true
+        })
+      }
+      calculateAndDisplayRoute(directionsService, renderers[i], waypts, map,stops,colours[i],i)
+
+    }
+  });
+}
+
+function calculateAndDisplayRoute(directionsService, directionsRenderer, waypts, map,stops,route_colour,index) {
+  directionsService
+    .route({
+      origin: "12.924739238040953,77.61868735920821",
+      destination: "12.924739238040953,77.61868735920821",
+      waypoints: waypts,
+      optimizeWaypoints: false,
+      travelMode: google.maps.TravelMode.DRIVING,
+    })
+    .then((response) => {
+      directionsRenderer.setDirections(response);
+
+      const route = response.routes[0];
+      console.log("routes length", route.legs.length);
+      // plot the markers from here
+      const svgMarker = {
+        path: "M0-48c-9.8 0-17.7 7.8-17.7 17.4 0 15.5 17.7 30.6 17.7 30.6s17.7-15.4 17.7-30.6c0-9.6-7.9-17.4-17.7-17.4z",
+        fillColor: route_colour,
+        fillOpacity: 1,
+        strokeWeight: 0,
+        rotation: 0,
+        scale: 0.7,
+        anchor: new google.maps.Point(15, 30),
+        labelOrigin:new google.maps.Point(0,-25),
+      };
+      console.log("Route length is  ",route.legs.length);
+			//console.log("sample leg is ",route.legs[1])
+      for (var i = 0; i < route.legs.length; i++) {
+      	console.log("For this route, iterating stop ",i)
+       // console.log("leg info is ",route.legs[i])
+        lat = route.legs[i].start_location.lat()
+        lng = route.legs[i].start_location.lng()
+        if (i ==  0){
+        	stop_name=String(i)+"-Altlifelab Kitchen"
+        }
+        else{
+        	stop_name= String(i)+"-"+stops[i-1].client
+        };
+        stop_title=String(index)+"."+String(i)
+        const marker = new google.maps.Marker({
+          position: new google.maps.LatLng(lat, lng),
+          draggable: false,
+          map: map,
+          //title: stop_title,
+          label: {text:stop_title, color:"white"},
+          icon: svgMarker,
+        });
+        const infowindow = new google.maps.InfoWindow({
+          maxWidth:200,
+          content: build_content(stop_name,route.legs[i].start_address,'123',route_colour)
+        });
+        marker.addListener("click", () => {
+          infowindow.open({
+            anchor: marker,
+            map,
+            shouldFocus: false,
+          });
+        });
+      }
+    })
+    .catch((e) => window.alert("Directions request failed due to " + String(e)));
+}
+function build_content(name,address,ETA,route_colour){
+	content='<html> <body> <div id="card"> <div id="title">'+
+          '<h3 style="color:'+route_colour
+          	+';">' +
+  					name +
+           '</h3> <hr> </div> <div id="info"> ETA : '+
+            ETA+
+           '<br> Address:'+
+           address+
+    '</div></div></body></html>'
+    console.log("content is ",content)
+    return content
+}
+  </script>
   </body>
 </html>

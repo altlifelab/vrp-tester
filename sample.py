@@ -37,14 +37,15 @@ Route Link: {route_link}\n
     for stop in route.get("route"):
         if stop.get("customer_name*") !="Altlifelab Kitchen":
             waypoints+=waypoint.format(lat=stop.get("latitude"),long=stop.get("longitude"))
-            route_stops.append(str(stop.get("latitude"))+","+str(stop.get("longitude")))
+            stop_info={'client':stop.get("customer_name*"),'location':str(stop.get("latitude"))+","+str(stop.get("longitude"))}
+            route_stops.append(stop_info)
     route_link=base_route.format(depot=depot, waypoints=waypoints)
     routes.append(route_stops)
     print(rep_line.format(vehicle_id=vehicle_id,stops=stops,cum_time=cum_time, last_drop=last_drop,cust_list=cust_list, route_link=route_link))
 tfile = "routing_template.html"
 env = Environment(loader=FileSystemLoader('.'))
 template = env.get_template(tfile)
-output = template.render(routes=routes)
+output = template.render(route_info=routes)
 with open("Routing Plan.html","w") as fh:
     fh.write(output)
     fh.close()
